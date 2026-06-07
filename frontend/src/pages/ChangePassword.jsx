@@ -13,10 +13,8 @@ function ChangePassword({ showToast }) {
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
-    code: '',
   });
   const [errors, setErrors] = useState({});
-  const [sendingCode, setSendingCode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
@@ -24,22 +22,6 @@ function ChangePassword({ showToast }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: null }));
-    }
-  };
-
-  const handleSendCode = async () => {
-    setSendingCode(true);
-    try {
-      const response = await api.post('/users/password/send-code');
-      showToast('Verification code sent to your email!', 'success');
-      if (response.data?.code) {
-        setFormData((prev) => ({ ...prev, code: response.data.code }));
-      }
-    } catch (err) {
-      const message = err.response?.data?.message || 'Failed to send verification code.';
-      showToast(message, 'error');
-    } finally {
-      setSendingCode(false);
     }
   };
 
@@ -56,10 +38,6 @@ function ChangePassword({ showToast }) {
     const confirmErr = validateConfirmPassword(formData.newPassword, formData.confirmPassword);
     if (confirmErr) newErrors.confirmPassword = confirmErr;
 
-    if (!formData.code) {
-      newErrors.code = 'Verification code is required';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -73,7 +51,6 @@ function ChangePassword({ showToast }) {
       await api.put('/users/password', {
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword,
-        code: formData.code,
       });
       showToast('Password changed successfully! Redirecting...', 'success');
       
@@ -92,8 +69,7 @@ function ChangePassword({ showToast }) {
   const isFormValid =
     formData.currentPassword &&
     formData.newPassword &&
-    formData.confirmPassword &&
-    formData.code;
+    formData.confirmPassword;
 
   return (
     <div className="change-password-page">
@@ -142,29 +118,7 @@ function ChangePassword({ showToast }) {
             required
           />
 
-          <div style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'flex-end', marginBottom: 'var(--space-md)' }}>
-            <div style={{ flex: 1 }}>
-              <FormInput
-                label="Verification Code"
-                type="text"
-                name="code"
-                value={formData.code}
-                onChange={handleChange}
-                error={errors.code}
-                placeholder="Enter 6-digit code"
-                required
-              />
-            </div>
-            <button
-              type="button"
-              className={`btn btn-secondary ${sendingCode ? 'btn-loading' : ''}`}
-              onClick={handleSendCode}
-              disabled={sendingCode}
-              style={{ height: '42px', marginBottom: errors.code ? '18px' : '0' }}
-            >
-              {sendingCode ? '' : 'Send Code'}
-            </button>
-          </div>
+
 
           <button
             type="submit"

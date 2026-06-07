@@ -12,11 +12,13 @@ router.get('/admin', auth, roleCheck('admin'), async (req, res) => {
     const totalUsers = await db.User.count();
     const totalStores = await db.Store.count();
     const totalRatings = await db.Rating.count();
+    const storeOwnersCount = await db.User.count({ where: { role: 'store_owner' } });
 
     return res.status(200).json({
       totalUsers,
       totalStores,
       totalRatings,
+      storeOwnersCount,
     });
   } catch (error) {
     console.error('Admin dashboard error:', error);

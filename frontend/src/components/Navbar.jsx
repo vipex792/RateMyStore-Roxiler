@@ -1,10 +1,22 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { FiLogOut, FiMenu, FiStar } from 'react-icons/fi';
+import { FiLogOut, FiMenu, FiStar, FiSun, FiMoon } from 'react-icons/fi';
 
 function Navbar({ onMenuToggle }) {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   const handleLogout = () => {
     logout();
@@ -56,6 +68,14 @@ function Navbar({ onMenuToggle }) {
       </div>
 
       <div className="navbar-right">
+        <button
+          className="theme-toggle-btn"
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+          style={{ marginRight: '8px' }}
+        >
+          {theme === 'dark' ? <FiSun /> : <FiMoon />}
+        </button>
         <div className="navbar-user">
           <span className="navbar-user-name">{user.name}</span>
           <span className={`navbar-role-badge ${getRoleBadgeClass(user.role)}`}>

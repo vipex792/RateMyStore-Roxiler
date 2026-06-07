@@ -174,20 +174,11 @@ router.put('/password', auth, updatePasswordValidation, async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { currentPassword, newPassword, code } = req.body;
-
-    if (!code) {
-      return res.status(400).json({ message: 'Verification code is required.' });
-    }
+    const { currentPassword, newPassword } = req.body;
 
     const user = await db.User.findByPk(req.user.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
-    }
-
-    // Verify verification code
-    if (user.verificationCode !== code || !user.verificationCodeExpires || new Date() > user.verificationCodeExpires) {
-      return res.status(400).json({ message: 'Invalid or expired verification code.' });
     }
 
     const isValidPassword = await user.comparePassword(currentPassword);
@@ -196,8 +187,6 @@ router.put('/password', auth, updatePasswordValidation, async (req, res) => {
     }
 
     user.password = newPassword;
-    user.verificationCode = null;
-    user.verificationCodeExpires = null;
     await user.save();
 
     return res.status(200).json({ message: 'Password updated successfully.' });
